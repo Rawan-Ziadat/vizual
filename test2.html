@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body{
+
+width : 1000px;
+height : 750px;
+}
+#map{
+width : 1000px;
+height: 680px;
+
+
+}
+.legend{
+height : 40px;
+width : 1000px;
+
+}
+.country{
+	stroke: #333333;
+	stroke-width: 1;
+
+}
+.tip {
+border-style:solid;
+border-width: 1px;
+border-color: black; 
+ border-radius: 10px;
+  line-height: 0.1;
+  color: white;
+  background-color:#4682b4;
+padding: 10px;
+}
+
+
+ .block {
+            text-align: center;            
+        }
+
+</style>
+</head>
+<body>
+  
+<div id="map"></div>
+
+<div class="legend">
+
+</div>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+</body>
+</html>
+<script>
+
+var temp={};
+ 
+var margin = {top: 20, right: 20, bottom: 30, left: 30},
+            width = 1000 - margin.left - margin.right,
+            height = 680 - margin.top - margin.bottom;
+
+		
+//scale color for coloring the countries depend on how many died in that country		
+var Scalecolor = d3.scale.linear().range(['#FFFFFF','#FF0000','#FFFE00','#30FF00','#00FFEA','#1100FF','#E900FF']);
+
+
+//creating a tip box for information about the country and its deaths
+	var tip = d3.tip()
+				.attr('class', 'tip')				
+				.html(function(d) {
+				return "<div class='block'><p class='italic'>"+ d.properties.name+"</p><span style='color:orange'>" +temp[d.properties.name] + "</span></div>";
+				})
+
+//create svg container for map				
+var svg = d3.select("#map")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top+margin.bottom)
+	.style('background-color','#006994')
+	.append('g')
+	.attr("transform","translate(0, 20)");
+	
+				
+var defs = svg.append("defs");				
+	
+	    // define map projection
+var projection = d3.geo.mercator().scale(120).translate( [width / 2, height / 1.6]);
+
+   // define path generator
+var path = d3.geo.path().projection(projection);
+
+
+
+	svg.call(tip);
+
+	
+	//read in countires.topo.json and Journalists.cvs
+queue()
+    .defer(d3.json, "countries.topo.json")
+    .defer(d3.csv, "Journalists.csv")
+    .await(ready);
+	
+	
+	
+
+function ready(error, data ,Journalists) {
+
+
+var countries,countries2 = [],CountryKill=[],i=0,j=0;
+	
+	
+	 for (key in data.objects) {	
+            countries = topojson.feature(data, data.objects[key]).features;
+			}
+			
+	
+	//get the column of 'country killed'
+			Journalists.forEach(function(currentValue){
+				countries2.push(currentValue['Country Killed']);;
+				})
+				
+//sort the countries killed to improve search time
+			countries2.sort();
+			
+			
+			//take unique values of countries2
+			var unique = countries2.filter(function(x, i, arr){ return arr.indexOf(x) === i; });
+
+	
+	
+	//make and array with 2	elements , first one for the country, second one the number of deaths in that country
+	var CountryKill  = unique.map(function(currentValue)
+	{
+		
+		return {type : currentValue ,sum: 0};
+		
+	});	
+
+
+	//fill the countrykill array
+	
+	while ( i < countries2.length && j < CountryKill.length)
+	{	
+		if(countries2[i] == CountryKill[j].type) 
+		{			
+			CountryKill[j].sum++;					
+			i++;				
+		}
+		else
+		{
+			j++;
+		}
+		
+	}
+	
+	
+	
+//making object the key is the country name and value the number of death  
+   	countries.forEach(function(d){	
+	temp[d.properties.name] = 0;
+	});
+	
+	CountryKill.forEach(function(d){	
+	
+	temp[d.type] = d.sum;
+	});
+
+	
+	//scale for the bar
+	Scalecolor.domain([0,10,20,40,50,100,200]);
+
+	//add the data for each country on the map
+	svg.selectAll(".country")
+		.data(countries)
+		.enter().append("path")
+		.attr("class","country")
+		.attr("fill",function(d){
+								return Scalecolor(temp[d.properties.name]);
+								})
+		.attr("d",path)
+		  .on('mouseover', tip.show)
+   .on('mouseout', tip.hide)
+		
+		
+	//create second svg container for the bar color
+		  
+	var canvas2 = d3.select('.legend')
+    .append("svg")
+	   .attr("height", 100)
+    .attr("width", 600)
+    .append('g')
+    .attr('class', 'panel')
+	.attr("transform","translate(50, 0)");
+	  
+	  
+	canvas2.append("defs")
+		   .append('linearGradient')
+            .attr('id', 'legend');
+			
+					
+	canvas2.append("rect")
+			 .attr("height" , 30 ).attr("width",500) 
+			   .attr("class","color-band")
+			   .style("fill","url(#legend)");
+			   
+		
+	canvas2.append('g').attr('class','axis')
+		.append("text").attr('class','unit');		
+	  
+      
+  var stops = d3.select('#legend')
+				.selectAll('stop')
+				.data(['#FFFFFF','#FF0000','#FFFE00','#30FF00','#00FFEA','#1100FF','#E900FF'])
+				.enter()
+				.append('stop')
+				.attr("offset", function(d, i){ return i*(100/7) + '%'; })
+				.attr("stop-color",  function(d){ return d; });
+
+							
+				
+  var ValuesL = Scalecolor.domain();
+  
+  // x axis for the bar
+  var xAxis = d3.select('.axis')
+        .selectAll('line.tick-line')
+        .data(ValuesL)
+        .enter()
+		.append('line')
+		.attr("x1",function(x, i){ return i*(500/7);})
+		.attr("y1", 30)
+		.attr("x2", function(x, i){ return i*(500/7);})
+		.attr("y2",35)
+		.attr("stroke", "blue");
+        
+		//text for axis
+  var xAxis= d3.select('.axis')
+        .selectAll('text.tick-label')
+        .data(ValuesL)
+        .enter()
+		.append('text')	
+		.attr("x", function(x, value){ return value*(500/7)})
+		.attr("y", 50)
+        .text(function(d){ return d; });		           		          
+}				
+</script>
+</body>
+</html>

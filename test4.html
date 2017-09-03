@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+<style>
+circle,
+path {
+  cursor: pointer;
+}
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+<script>
+var years = [1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014];
+var TypeofDeath = [];
+var TypeofDeath2=[];
+
+
+var width = 800,
+    height = 800,
+	//determines which is smaller the width or height then it divides that value by 2 
+	//since the radius is 1/2 of the circle's diameter
+    radius = Math.min(width, height) / 2;
+
+var x = d3.scale.linear()
+    .range([0, 2 * Math.PI]);
+
+var y = d3.scale.sqrt()
+    .range([0, radius]);
+
+	
+//return a rainbow of color options for our sunburst.
+var colors = d3.scale.category10();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width+500)
+    .attr("height", height+500)
+    .append("g")
+    .attr("transform", "translate(" + ((width / 2)+400) + "," + ((height / 2)) + ") rotate(-90 0 0)");
+
+
+var partition = d3.layout.partition()
+    .value(function (d) {
+    return d.size;
+});
+//startAngle is for the radian location for the start of the arc
+//endAngle is for the radian location for the end of th ac 
+//innerRadius)is for the radian location for the inside arc
+//outerRadius is for the radian location for the outside arc
+var arc = d3.svg.arc()
+    .startAngle(function (d) {return Math.max(0, Math.min(2 * Math.PI, x(d.x)));})
+    .endAngle(function (d) {return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));})
+    .innerRadius(function (d) {return Math.max(0, y(d.y));})
+    .outerRadius(function (d) {return Math.max(0, y(d.y + d.dy));});
+	
+	
+	
+d3.csv("Journalists.csv", function(error, data) {
+	if (error) throw error;
+	
+
+//taking all the data from column type of death
+	data.forEach(function(i){	
+	if(i['Type of Death'] != "") TypeofDeath.push(i['Type of Death']);	
+	});
+	
+	
+
+	//remove the duplicates
+	var unique = TypeofDeath.filter(function(item,i,ar){ return ar.indexOf(item) === i;});
+	
+	
+	//sort the unique values
+	unique.sort();	 
+
+	
+	//taking the important information from the data
+		var DataTemp = data.filter(function(w){
+								return typeof w != 'undefined' && w['Name'] != "" && w['Type of Death'] != "" && w['Year of Death'] > 1991
+								}).map(function(z){return {name : z['Name'],TypeDeath : z['Type of Death'],death: z['Year of Death'] , size : 1};})
+								
+
+//creating a tree that the years first level the Type of death second level
+//and the person who died that year and the same type of death is in the third level														
+	var temp = years.map(function(year){
+				return {
+					name : year , 
+					children : unique.map(function(x) {   			
+						return {
+						name: x,
+						children : DataTemp
+						.filter(function(jurnalist){
+							return typeof jurnalist != 'undefined' && x == jurnalist.TypeDeath&& jurnalist.death == year
+						})
+						.map(function(z){
+							return {name : z.name , size : 1};
+						})
+						};
+					})
+				};
+	});				
+																																
+	//making root to the tree
+	var TypeDeathRoot = {name : "CLICK TREE" , children : temp};
+	
+			
+var g = svg.selectAll("g")
+    .data(partition.nodes(TypeDeathRoot))
+    .enter()
+	.append("g");
+
+var path = g.append("path")
+    .attr("d", arc)
+    .style("fill", function (d) {
+	if(d.depth < 2) return colors((d.children ? d : d.parent).name);
+	return "none";
+    })
+    .on("click", ClickOn);
+	
+	//add label for each node
+	var text = g.append("text")
+    .attr("x", function (d) {
+								return y(d.y);
+							})
+    .attr({"dx": "20",
+		   "dy": ".5em",
+		   "transform" : function (d) {
+							return "rotate(" + (x(d.x + d.dx / 2) - Math.PI / 2)/ Math.PI * 180 + ")";}
+		 }).text(function (d) {
+		 
+								return d.name;
+							})
+								.style("fill","white")
+								.style("font-size","15px");																
+								
+								
+		//function handle the click mouse						
+function ClickOn(d) {
+   
+    if(!(d.size == undefined)) {d.size += 100;};
+    text.transition().attr("opacity", 0);
+	if(d.name == "CLICK TREE"){
+    path.transition()
+        .duration(100)
+		.style("fill", function (d) {
+		if(d.depth < 2) return colors((d.children ? d : d.parent).name);
+		return "none";
+		})
+        .attrTween("d", arcTween(d))
+        .each("end", function (m) {      
+        if (m.x >= d.x && m.x < (d.x + d.dx)) {           
+            var arcText = d3.select(this.parentNode).select("text");           
+            arcText.transition().duration(100)
+                .attr({"opacity": 1,
+					  "transform": function () {return "rotate(" + (x(m.x + m.dx / 2) - Math.PI / 2)/ Math.PI * 180 + ")"},
+					  "x": function (d) { return y(d.y);}})
+}});
+}else
+	{
+	if(!(d.size == undefined)) {d.size += 100;};
+    text.transition().attr("opacity", 0);
+		 path.transition()
+        .duration(100)
+		.style("fill", function (d) {
+		 return colors((d.children ? d : d.parent).name);			
+			})
+        .attrTween("d", arcTween(d))
+        .each("end", function (m) {       
+        if (m.x >= d.x && m.x < (d.x + d.dx)) {
+	          
+            var arcText = d3.select(this.parentNode).select("text");           
+            arcText.transition().duration(100)
+                .attr({"opacity": 1,
+					  "transform": function () {return "rotate(" + (x(m.x + m.dx / 2) - Math.PI / 2)/ Math.PI * 180 + ")"},
+					  "x": function (d) { return y(d.y);}})
+}});
+	}
+} 
+
+});
+// Interpolate the scales!
+function arcTween(d) {
+	var dx,dy,ry;
+		dx = d3.interpolate(x.domain(), [d.x, d.x + d.dx]);
+        dy = d3.interpolate(y.domain(), [d.y, 1]);
+        ry = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+		return function (d, z) {
+		return z ? function (m) {
+            return arc(d);
+        } : function (m) {
+            x.domain(dx(m));
+            y.domain(dy(m)).range(ry(m));
+            return arc(d);
+        };
+	};
+	}
+	
+
+	
+	    	
+</script>

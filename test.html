@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body{
+    width:1300px;
+    margin:50px auto;	
+}
+.axis {  font: 12px ariel; }
+.table tr{    border-bottom:5px solid #18792A; }
+.table tr:first-child{    border-top:5px solid #18792A; }
+.x.axis path {  display: none; }
+.axis path,
+.axis line {
+  fill: none;
+  stroke: red;
+  shape-rendering: crispEdges;
+}
+path {  stroke: #000; }
+rect:hover {  fill:orange; }
+.table{
+    margin-bottom:76px;
+    display:inline-block;
+    border-collapse: collapse;
+    border-spacing: 0px;
+
+	}
+.tableF, .tableP{
+    align:right;
+    width:30px;
+}
+.table td{
+    padding:4px 5px;
+    vertical-align:bottom;
+}
+
+
+
+</style>
+<body>
+<div id='BoardD'>
+</div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var c=1992;
+var deathyear,Gender;
+var counter = [],Rcounter=[
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0},																											
+							{Journalist:0,MediaWorker:0}																											
+		];		
+
+//initialize array with 0 to count the number of death each year
+while (c<2015)
+{
+    counter[c-1992]=0;
+    c++;
+}
+
+
+d3.csv("Journalists.csv", function(data) { 
+
+
+//take dat
+	data.forEach(function(i){
+    x=i['Year of Death'];
+	y=i['Role'];
+	deathyear= x - 1992;		
+	counter[deathyear]++;	
+	if(y == "Journalist" && deathyear > -1){	
+	Rcounter[deathyear]["Journalist"]++;
+	}else if(deathyear > -1)Rcounter[deathyear]["MediaWorker"]++;	
+	});
+	
+	
+	var HGarr  = counter.map(function(currentValue, index)//array with 2	elements each cell first one the year second one the number of deaths that year
+	{
+		return [index+1992,counter[index],Rcounter[index]];
+	});
+
+	 var PieRoleCount = ['Journalist','MediaWorker'].map(function(d){
+        return {type:d, sum: d3.sum(Rcounter.map(function(t){ return t[d];}))};
+				});		
+	
+	BoardD(data);
+
+function BoardD(Data){
+
+ // this to create the 3 shapes
+	var Hgram = HGram(HGarr);
+	var PieR = PChart(PieRoleCount);
+	var tab = Table(PieRoleCount);
+	
+	function HGram(DeathYear){
+		var margin = {top: 20 , right:30, bottom: 30, left:30},
+		width = 700 - margin.left - margin.right,
+		height = 300 - margin.top - margin.bottom;
+		
+		//creating svg for histogram
+		var canvas = d3.select("#BoardD")
+						.append("svg")
+						.attr({
+								"width" : width + margin.left + margin.right,
+								"height" : height + margin.bottom + margin.top,
+								"transform" : "translate(0,20)"});						
+								
+								
+			//scale for x axis		
+        var xScale = d3.scale.ordinal()
+						.rangeRoundBands([0,width], 0.1)									
+						.domain(DeathYear.map(
+								function(d) {								
+												return d[0];
+									}));
+		//y scale 
+		var yScale = d3.scale.linear().range([height,0])
+							 .domain([0,d3.max(DeathYear, function(d) { return d[1]; })]);								 
+
+		// x axis
+        var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+		var yAxis = d3.svg.axis().scale(yScale).orient("left");
+		
+			
+        canvas.append("g").attr({
+								"class": "x axis",
+								"transform" :"translate(30,"+height+")"}).call(xAxis).selectAll('text').attr("transform","rotate(-30)");
+								
+		 canvas.append("g").attr({"class": "y axis",
+									"transform":"translate(40,0)"}).call(yAxis).selectAll('text').attr("transform","rotate(-30)");
+		
+		
+		
+		//this bars to contain rect 
+		var bars = canvas.selectAll(".bar")
+						.data(DeathYear)
+						.enter()
+						.append("g")
+						.attr("class","bar");
+						
+						
+	//this to create rect	
+		bars.append("rect")
+			.attr({
+				"x" : function(d) { return xScale(d[0])},
+				"y" : function(d) { return yScale(d[1])},
+				"width": xScale.rangeBand(),
+				"height"  :function(d) { return height - yScale(d[1])},
+				'fill' : "	#00B300",
+				"transform":"translate(30,0)"				
+			})
+			.on("mouseover",MOn)
+			.on("mouseout",MOut);
+			
+		
+			
+		//text on rect	
+	    bars.append("text").text(function(d){ return d3.format(",")(d[1])})
+					.attr({"x": function(d) { return xScale(d[0])+xScale.rangeBand()/2; },
+				   "y": function(d) { return yScale(d[1])+15; },
+				   "text-anchor": "middle",
+				   "transform":"translate(30,0)",
+				   "fill" : "white"});
+				   
+		//function that handle mouseover		   
+		function MOn(x){	
+
+			var year = x[0];
+			var PieRoleCount2 = ['Journalist','MediaWorker'].map(function(d){			
+									return {type:d, sum: Rcounter[year-1992][d]}} 
+							
+				);	
+			PieR.Change(PieRoleCount2);
+			tab.Change(PieRoleCount2);
+			
+		}
+		//function that handle mouseout
+		function MOut(x){			
+			PieR.Change(PieRoleCount);
+			tab.Change(PieRoleCount);
+			
+		}
+				 
+				
+}
+
+//function for pie
+	function PChart(R){
+	
+	
+	
+	var width = 200,height= 200,radius= 100,PieR ={};
+	
+	var color = d3.scale.ordinal()
+				.range(["red","blue"]);
+
+//svg container for pie
+	var Psvg = d3.select("#BoardD")
+				 .append("svg")
+				 .attr("width",width)
+				 .attr("height",height)
+				 .append('g')
+				 .attr("transform","translate(100,100)");
+				 
+	// draw arc pie slice			 
+	var arc = d3.svg.arc().outerRadius(radius-10).innerRadius(3);
+	
+	//compute pie slice angles
+	var pie = d3.layout.pie().sort(null).value(function(d) { return d.sum;});
+	
+	
+	//draw the pie slices
+	Psvg.selectAll("path").data(pie(R))
+						  .enter().append("path")
+						  .attr("d",arc)
+						  .each(function(d) {this._current = d;})
+						  .attr("fill",function(d) {return color(d.value);});						  			
+						  
+//this function to change the pie by the histogram			  
+	PieR.Change = function(T){
+								Psvg.selectAll("path")
+									.data(pie(T))
+									.transition()									
+									.attrTween("d", aT);
+							  }
+
+		function aT(d)
+		{
+            var z = d3.interpolate(this._current, d);
+            this._current = z(0);
+            return function(y) { 
+								return arc(z(y)); 
+								};
+        }    		
+	return PieR;
+	}
+	
+	
+	//function for the table
+	function Table(W)
+	{	
+				         
+		var width = 16,height=16,tab={},temp2;
+		
+		//create table
+		var table = d3.select("#BoardD")
+				      .append("table")
+					  .attr('class','table');
+					  
+		//scale 			  
+		var color = d3.scale.ordinal()
+				.range(["red","blue"]);
+	
+		//this will create a row for each object in W
+		var tr = table.append("tbody").selectAll("tr").data(W).enter().append("tr");
+		
+		
+		//first coloumn to create rect and the color of the jounalist and mediaWorker
+		tr.append("td").append("svg").attr("width",width).attr("height",height).append("rect")
+									.attr("width",width).attr("height",height)
+									.attr("fill",function(d) {					
+									return color(d.sum);});
+									
+		// column for text for the names of jounalist and mediaworker
+   		tr.append("td").text(function(d) { return d.type;});	
+		
+		//column to calculate the number of death of journalist and mediaWorker
+		tr.append("td").attr('class','tableF')
+						.text(function(d){ return d3.format(",")(d.sum);});
+		
+		//column for the percent of death of jounalist and mediaworker
+		tr.append("td").attr("class","tableP")
+					  .text(function(d) { return d3.format("%")(d.sum/d3.sum(
+																				W.map(function(y){ 
+																									return y.sum; 
+															})));});
+															
+      //update the table according to historgram															
+		tab.Change = function(PR2){
+           
+            temp2 = table.select("tbody").selectAll("tr").data(PR2);
+			
+            temp2.select(".tableF").text(function(d){ return d3.format(",")(d.sum);});
+
+            temp2.select(".tableP").text(function(d){  return d3.format("%")(d.sum/d3.sum(
+																				PR2.map(function(y){ 
+																									return y.sum; 
+																			})));});        			
+									}
+        return tab;    
+	}
+}})								
+							
+</script>

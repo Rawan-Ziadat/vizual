@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+  overflow: hidden;
+  width: 1400px;
+	height:650px;
+    overflow: hidden; 
+}
+
+#AreaChart{
+ width: 960px;
+    float:left; 
+
+	}
+	#legend{
+    overflow: hidden;
+	}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: red;
+  shape-rendering: crispEdges;
+}
+
+</style>
+<body >
+<div id="AreaChart"></div>
+
+<div id="legend">
+
+</div>
+<body width="1000" height="1000">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var color = d3.scale.category20(),max = 0,AllSourceOfFire =[],count = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var Rcounter=[
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0},
+			{"Government Officials":0,"Military Officials":0,"Unknown Fire":0,"Political Group":0,"Government Officials, Military Officials":0,"Criminal Group":0,"Paramilitary Group":0,"Mob Violence":0,"Local Residents":0,"Criminal Group, Political Group":0,"Criminal Group, Mob Violence":0,"Paramilitary Group, Political Group":0,"Criminal Group, Government Officials":0,"Criminal Group, Military Officials":0,"Government Officials, Paramilitary Group":0,"Military Officials, Political Group":0}
+							];
+
+
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+	//scale for x
+	  var xScale = d3.scale.ordinal()
+						.rangeRoundBands([0,width])
+						.domain([1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014]);
+		
+
+
+// scale for y		
+var yScale = d3.scale.linear().range([height,0]);
+
+
+
+// x and y axis
+	var yAxis = d3.svg.axis().scale(yScale).orient("left");
+	var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+	
+	
+	
+	
+var area = d3.svg.area()
+    .x(function(d){return xScale(d.date); })
+    .y0(function(d){ return yScale(d.y0); })
+    .y1(function(d){ return yScale(d.y0 + d.y); });
+	
+
+	var stack = d3.layout.stack()
+    .values(function(d) { return d.values; });
+	
+	
+	var svg = d3.select("#AreaChart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+	.append("g")
+    .attr("transform", "translate(10,10)");
+	
+	
+	
+	//taking info from csv file
+	d3.csv("Journalists.csv", function(error, data) {
+	  if (error) throw error;
+	  
+	
+
+//take all Source of Fire column	
+	data.forEach(function(i){
+	
+	if(i['Source of Fire'] != "") AllSourceOfFire.push(i['Source of Fire']);	
+	});
+
+	
+	//take the unique values from AllSourceofFire
+	var unique = AllSourceOfFire.filter(function(item,i,ar){ return ar.indexOf(item) === i;});
+
+
+	//set domain to color
+   color.domain(unique);
+   
+   
+   //for each raw in data it check which year the journalist died and what is source of fire and count it 
+	data.forEach(function(i){
+	 x=i['Year of Death'];
+	 y=i['Source of Fire'];
+	 deathyear= x - 1992;
+	 if(y == "Criminal Group" && deathyear > -1){Rcounter[deathyear][y]++;}
+	 if(y == "Criminal Group, Government Officials" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Criminal Group, Military Officials" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Criminal Group, Mob Violence" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Criminal Group, Political Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Government Officials" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Government Officials, Military Officials" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Government Officials, Paramilitary Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Local Residents" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Military Officials" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Military Officials, Political Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Mob Violence" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Paramilitary Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Paramilitary Group, Political Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Political Group" && deathyear > -1){Rcounter[deathyear][y]++;};
+	 if(y == "Unknown Fire" && deathyear > -1){Rcounter[deathyear][y]++;};	
+	 
+	});	
+
+	
+	
+	//putting values for each unique source of fire , the name , and the values contain the years and how many from that type died on that year
+	var StackedValues = stack(color.domain().map(function(name) {
+				return {
+				name: name,values: Rcounter.map(function(d,x) {   			
+																return {date: x+1992, y: d[name]};
+																})
+						};
+															}));
+				
+
+
+		//calculate for each year how many 'source of fire' typs died in that year ,this to calculate the max afterwards to the y scale
+	 Rcounter.forEach(function(d,i){
+			color.domain().forEach(function(x){			
+			count[i] += d[x];   
+			});
+			
+		});
+	console.log(Rcounter);
+console.log(count);
+
+//take the max value from count
+	var max = Math.max.apply(null, count);
+
+	//make y domain scale from 0 to the max value
+	 yScale.domain([0,max]);
+	 
+	 	 
+	 
+ var Farea = svg.selectAll(".Farea")
+      .data(StackedValues)
+		.enter().append("g")
+      .attr("class", "Farea");
+
+  Farea.append("path")
+      .attr("d", function(d) { return area(d.values); })	 
+      .style("fill", function(d) { return color(d.name); })
+	   .attr("transform", "translate(20,0)");
+
+	   
+	   //draw the y axis
+	     svg.append("g")
+      .attr("class", "y axis")
+	   .attr("transform", "translate(29,0)")
+      .call(yAxis);
+	   
+	   
+	   //draw the x axis
+		svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+  
+		
+		
+		//legend scale
+	
+	        var legendScale = d3.scale.ordinal()
+            .domain(color.domain())
+            .range(color);
+       
+        
+		// new svg for legend
+        var Leg = d3.select("#legend").append("svg")
+            .attr("width", 400).attr("height", 600);
+            
+   
+        var legend = Leg.selectAll('.legend')
+            .data(legendScale.domain())
+            .enter().append('g')        
+            .attr("transform", function (d, i) {
+            {
+                return "translate(100," + i * 40 + ")"
+            }
+        })
+        
+		//adding rect to each legend
+        legend.append('rect')
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", function (d, i) {
+            return color(i)
+        })
+        
+		//adding text
+        legend.append('text')
+            .attr("x", 20)
+            .attr("y", 10)
+			.text(function (d, i) {
+            return d
+        });
+           
+        
+	});
+</script>
